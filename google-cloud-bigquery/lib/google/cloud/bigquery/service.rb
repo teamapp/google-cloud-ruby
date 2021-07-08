@@ -592,7 +592,7 @@ module Google
             loop do
               return yield
             rescue Google::Apis::Error => e
-              raise e unless retry? e.body, current_retries
+              raise e unless retry? e, current_retries
 
               @backoff.call current_retries
               current_retries += 1
@@ -601,8 +601,8 @@ module Google
 
           protected
 
-          def retry? result, current_retries #:nodoc:
-            if current_retries < @retries && retry_error_reason?(result)
+          def retry? error, current_retries #:nodoc:
+            if current_retries < @retries && (retry_error_reason?(error.body) || error.status_code == 502)
               return true
             end
             false
